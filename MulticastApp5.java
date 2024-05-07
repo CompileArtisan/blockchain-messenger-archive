@@ -1,28 +1,41 @@
 import java.io.*;
 import java.net.*;
-import java.lang.*;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Date;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.KeyGenerator;
 
 class Message implements Serializable {
     private String content;
     private long timestamp;
-  
-    public Message(String content) {
-      this.content = content;
-      this.timestamp = System.currentTimeMillis();
+    private SecretKey key;
+
+    public Message(String content, SecretKey key) {
+        this.content = content;
+        this.timestamp = System.currentTimeMillis();
+        this.key = key;
     }
-  
+
+    public SecretKey getKey() {
+        return key;
+    }
+
     public String getContent() {
-      return content;
+        return content;
     }
-  
+
     public long getTimestamp() {
-      return timestamp;
+        return timestamp;
     }
-  }
-  
-// lmoa
-public class MulticastApp5 extends Thread{
+}
+
+public class MulticastApp5 extends Thread {
     private MulticastSocket socket;
     private InetAddress group;
     private int port;
@@ -32,19 +45,23 @@ public class MulticastApp5 extends Thread{
         this.group = InetAddress.getByName(multicastAddress);
         this.port = port;
         this.socket = new MulticastSocket(port);
-        this.socket.joinGroup(new InetSocketAddress(group, port), NetworkInterface.getByInetAddress(InetAddress.getLocalHost()));
+        this.socket.joinGroup(group);
     }
 
-    public void sendMessage(Message message) throws IOException {
+    public void sendMessage(Message message) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ObjectOutputStream oos = new ObjectOutputStream(baos);
         oos.writeObject(message);
         oos.flush();
         byte[] buffer = baos.toByteArray();
-        DatagramPacket packet = new DatagramPacket(buffer, buffer.length, group, port);
+
+        Cipher cipher = Cipher.getInstance("AES");
+        cipher.init(Cipher.ENCRYPT_MODE, message.getKey());
+        byte[] encryptedContent = cipher.doFinal(message.getContent().getBytes());
+
+        DatagramPacket packet = new DatagramPacket(encryptedContent, encryptedContent.length, group, port);
         socket.send(packet);
-      }
-      
+    }
 
     public void run() {
         byte[] buffer = new byte[4096];
@@ -53,18 +70,23 @@ public class MulticastApp5 extends Thread{
         while (running) {
             try {
                 socket.receive(packet);
-                byte[] data = packet.getData();
-                ByteArrayInputStream bais = new ByteArrayInputStream(data);
+                ByteArrayInputStream bais = new ByteArrayInputStream(packet.getData());
                 ObjectInputStream ois = new ObjectInputStream(bais);
                 Message receivedMessage = (Message) ois.readObject();
+
+                Cipher cipher = Cipher.getInstance("AES");
+                cipher.init(Cipher.DECRYPT_MODE, receivedMessage.getKey());
+                byte[] encryptedContent = (byte[]) ois.readObject();
+                String decryptedContent = new String(cipher.doFinal(encryptedContent));
+
                 InetAddress sourceAddress = packet.getAddress();
-                String s = sourceAddress.toString();
                 InetAddress localHost = Inet4Address.getLocalHost();
                 String ipv4Address = "/" + localHost.getHostAddress();
-                if (!s.equals(ipv4Address)) {
-                    System.out.println("Received message: " + receivedMessage.getContent() + ", Timestamp: " + new Date(receivedMessage.getTimestamp()));  
+
+                if (!sourceAddress.getHostAddress().equals(ipv4Address)) {
+                    System.out.println("Received message: " + decryptedContent + ", Timestamp: " + new Date(receivedMessage.getTimestamp()));
                 }
-                
+
             } catch (Exception e) {
                 System.out.println("IOException: " + e.getMessage());
             } finally {
@@ -85,10 +107,15 @@ public class MulticastApp5 extends Thread{
         }
     }
 
-    public static void main(String[] args) throws IOException {
-    	MulticastApp5 m = new MulticastApp5("239.255.255.250", 8888);
+    public static void main(String[] args) throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
+        MulticastApp5 m = new MulticastApp5("239.255.255.250", 8888);
         java.util.Scanner sc = new java.util.Scanner(System.in);
         m.start();
+
+        KeyGenerator keyGen = KeyGenerator.getInstance("AES");
+        keyGen.init(128);
+        SecretKey secretKey = keyGen.generateKey();
+
         while (true) {
             System.out.print("Enter message: ");
             String text = sc.nextLine();
@@ -96,11 +123,9 @@ public class MulticastApp5 extends Thread{
                 m.shutdown();
                 break;
             }
-            Message message = new Message(text);
+            Message message = new Message(text, secretKey);
 
             m.sendMessage(message);
         }
-    	// m.sendMessage(new java.util.Scanner(System.in).nextLine());
-        // m.listen();
     }
 }
