@@ -78,8 +78,10 @@ public class MulticastApp5 extends Thread {
 
                 Cipher cipher = Cipher.getInstance("AES");
                 cipher.init(Cipher.DECRYPT_MODE, receivedMessage.getKey());
-                byte[] encryptedContent = (byte[]) ois.readObject();
+                byte[] encryptedContent = new byte[packet.getLength() - Message.class.getDeclaredField("key").getDeclaredAnnotations().length - Long.BYTES];
+                System.arraycopy(packet.getData(), Message.class.getDeclaredField("key").getDeclaredAnnotations().length + Long.BYTES, encryptedContent, 0, encryptedContent.length);
                 String decryptedContent = new String(cipher.doFinal(encryptedContent));
+                
 
                 InetAddress sourceAddress = packet.getAddress();
                 InetAddress localHost = Inet4Address.getLocalHost();
@@ -110,6 +112,12 @@ public class MulticastApp5 extends Thread {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             } catch (BadPaddingException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (NoSuchFieldException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (SecurityException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             } finally {
