@@ -3,23 +3,32 @@ import java.net.*;
 import java.lang.*;
 import java.util.Date;
 
+import java.security.*;
+
+
 class Message implements Serializable {
     private String content;
     private long timestamp;
-  
-    public Message(String content) {
-      this.content = content;
-      this.timestamp = System.currentTimeMillis();
+    private PublicKey publicKey;
+
+    public Message(String content, PublicKey publicKey) {
+        this.content = content;
+        this.publicKey = publicKey;
+        this.timestamp = System.currentTimeMillis();
     }
-  
+
     public String getContent() {
-      return content;
+        return content;
     }
-  
+
     public long getTimestamp() {
-      return timestamp;
+        return timestamp;
     }
-  }
+
+    public PublicKey getPublicKey() {
+        return publicKey;
+    }
+}
   
 // lmoa
 public class MulticastApp5 extends Thread{
@@ -41,9 +50,9 @@ public class MulticastApp5 extends Thread{
         oos.writeObject(message);
         oos.flush();
         byte[] buffer = baos.toByteArray();
-        DatagramPacket packet = new DatagramPacket(buffer, buffer.length, group, port);
+        DatagramPacket packet = new DatagramPacket(buffer, buffer.length, group, port); 
         socket.send(packet);
-      }
+    }
       
 
     public void run() {
@@ -66,7 +75,8 @@ public class MulticastApp5 extends Thread{
                 }
                 
             } catch (Exception e) {
-                System.out.println("IOException: " + e.getMessage());
+                e.printStackTrace();
+                //System.out.println("IOException: " + e.getMessage());
             } finally {
                 packet.setLength(buffer.length);
             }
@@ -85,7 +95,7 @@ public class MulticastApp5 extends Thread{
         }
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, ClassNotFoundException {
     	MulticastApp5 m = new MulticastApp5("239.255.255.250", 8888);
         java.util.Scanner sc = new java.util.Scanner(System.in);
         m.start();
@@ -96,8 +106,7 @@ public class MulticastApp5 extends Thread{
                 m.shutdown();
                 break;
             }
-            Message message = new Message(text);
-
+            Message message = new Message(text, (PublicKey) KeyDeserialiser.loadKeyFromFile("public_key.ser"));
             m.sendMessage(message);
         }
     	// m.sendMessage(new java.util.Scanner(System.in).nextLine());
