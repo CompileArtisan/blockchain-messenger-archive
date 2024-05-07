@@ -3,6 +3,10 @@ import java.net.*;
 import java.lang.*;
 import java.util.Date;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+
 import java.security.*;
 
 
@@ -11,14 +15,15 @@ class Message implements Serializable {
     private long timestamp;
     private PublicKey publicKey;
 
-    public Message(String content, PublicKey publicKey) {
-        this.content = content;
+    public Message(String content, PublicKey publicKey) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
         this.publicKey = publicKey;
+        this.content = DigitalSignatureExample.encrypt(content, publicKey);
         this.timestamp = System.currentTimeMillis();
     }
 
-    public String getContent() {
-        return content;
+    public String getContent() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, ClassNotFoundException, IOException {
+        
+        return DigitalSignatureExample.decrypt(content, (PrivateKey) KeyDeserialiser.loadKeyFromFile("private_key.ser"));
     }
 
     public long getTimestamp() {
@@ -95,7 +100,7 @@ public class MulticastApp5 extends Thread{
         }
     }
 
-    public static void main(String[] args) throws IOException, ClassNotFoundException {
+    public static void main(String[] args) throws IOException, ClassNotFoundException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
     	MulticastApp5 m = new MulticastApp5("239.255.255.250", 8888);
         java.util.Scanner sc = new java.util.Scanner(System.in);
         m.start();
