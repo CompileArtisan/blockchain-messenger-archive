@@ -70,6 +70,8 @@ public class MulticastApp5 extends Thread {
         while (running) {
             try {
                 socket.receive(packet);
+
+                // Process the datagram packet
                 ByteArrayInputStream bais = new ByteArrayInputStream(packet.getData());
                 ObjectInputStream ois = new ObjectInputStream(bais);
                 Message receivedMessage = (Message) ois.readObject();
@@ -87,8 +89,29 @@ public class MulticastApp5 extends Thread {
                     System.out.println("Received message: " + decryptedContent + ", Timestamp: " + new Date(receivedMessage.getTimestamp()));
                 }
 
-            } catch (Exception e) {
+                // Close streams (outside the loop)
+                ois.close();
+                bais.close();
+
+            } catch (ClassNotFoundException e) {
+                System.out.println("Error: Class not found during deserialization: " + e.getMessage());
+            } catch (IOException e) {
                 System.out.println("IOException: " + e.getMessage());
+            } catch (NoSuchAlgorithmException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (NoSuchPaddingException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (InvalidKeyException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (IllegalBlockSizeException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (BadPaddingException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
             } finally {
                 packet.setLength(buffer.length);
             }
@@ -100,9 +123,9 @@ public class MulticastApp5 extends Thread {
         if (socket != null && !socket.isClosed()) {
             try {
                 socket.leaveGroup(group);
-                socket.close();
+                socket.close(); // Close the socket
             } catch (Exception e) {
-                System.out.println("Error");
+                System.out.println("Error during shutdown: " + e.getMessage());
             }
         }
     }
