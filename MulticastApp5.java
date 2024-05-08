@@ -88,18 +88,6 @@ public class MulticastApp5 extends Thread{
         }
     }
 
-    public void shutdown() {
-        running = false;
-        if (socket != null && !socket.isClosed()) {
-            try {
-                socket.leaveGroup(group);
-                socket.close();
-            } catch (Exception e) {
-                System.out.println("Error");
-            }
-        }
-    }
-
     public static void main(String[] args) throws IOException, ClassNotFoundException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
     	MulticastApp5 m = new MulticastApp5("239.255.255.250", 8888);
         java.util.Scanner sc = new java.util.Scanner(System.in);
