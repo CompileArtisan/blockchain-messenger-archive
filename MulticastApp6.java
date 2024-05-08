@@ -14,11 +14,13 @@ class Message implements Serializable {
     private String content;
     private long timestamp;
     private PublicKey publicKey;
+    byte[] signature;
 
-    public Message(String content, PublicKey publicKey) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
+    public Message(String content, PublicKey publicKey) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, SignatureException, ClassNotFoundException, IOException {
         this.publicKey = publicKey;
         this.content = DigitalSignatureExample.encrypt(content, publicKey);
         this.timestamp = System.currentTimeMillis();
+        this.signature = DigitalSignatureExample.sign(content, (PrivateKey) KeyDeserialiser.loadKeyFromFile("private_key.ser"));
     }
 
     public String getContent() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, ClassNotFoundException, IOException {
@@ -32,6 +34,10 @@ class Message implements Serializable {
 
     public PublicKey getPublicKey() {
         return publicKey;
+    }
+
+    public byte[] getSignature() {
+        return signature;
     }
 }
   
@@ -88,7 +94,7 @@ public class MulticastApp6 extends Thread{
         }
     }
 
-    public static void main(String[] args) throws IOException, ClassNotFoundException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
+    public static void main(String[] args) throws IOException, ClassNotFoundException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, SignatureException {
     	MulticastApp6 m = new MulticastApp6("239.255.255.250", 8888);
         java.util.Scanner sc = new java.util.Scanner(System.in);
         m.start();
