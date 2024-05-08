@@ -97,7 +97,7 @@ public class MulticastApp5 extends Thread{
             String text = sc.nextLine();
             if (text.equalsIgnoreCase("clear")) {
                 System.out.print("\033[H\033[2J");
-                break;
+                continue;
             }
             Message message = new Message(text, (PublicKey) KeyDeserialiser.loadKeyFromFile("public_key.ser"));
             m.sendMessage(message);
