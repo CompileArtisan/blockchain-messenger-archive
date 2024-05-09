@@ -61,27 +61,8 @@ public class Login {
         return null;
     }
 
-    HashMap<String, UserKeyPair> userKeyPairs = new HashMap<>();
-
     // userKeyPairs.put(userName, new UserKeyPair(publicKeyFile, privateKeyFile)); to insert a keypair
     // UserKeyPair userKeyPair = userKeyPairs.get(userName); to get a keypair
     
     // Similar for other users
-}
-
-class UserKeyPair {
-    private final String publicKeyFile;
-    private final String privateKeyFile;
-  
-    public UserKeyPair(String publicKeyFile, String privateKeyFile) {
-      this.publicKeyFile = publicKeyFile;
-      this.privateKeyFile = privateKeyFile;
-    }
-    public String getPublicKeyFile() {
-      return publicKeyFile;
-    }
-  
-    public String getPrivateKeyFile() {
-      return privateKeyFile;
-    }
 }
