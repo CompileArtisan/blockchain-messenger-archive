@@ -16,7 +16,6 @@ class Message implements Serializable {
     private long timestamp;
     private PublicKey publicKey;
     byte[] signature;
-    HashMap<String, String> userKeyPairs = new HashMap<>();
 
     public Message(String content, PublicKey publicKey) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, SignatureException, ClassNotFoundException, IOException {
         this.publicKey = publicKey;
@@ -83,7 +82,7 @@ public class MulticastApp7 extends Thread{
                 String s = sourceAddress.toString();
                 InetAddress localHost = Inet4Address.getLocalHost();
                 String ipv4Address = "/" + localHost.getHostAddress();
-                if (!s.equals(ipv4Address)) {
+                if (!s.equals(ipv4Address)&&DigitalSignatureExample.verify(receivedMessage.getContent(), receivedMessage.getSignature(), receivedMessage.getPublicKey())){
                     System.out.println("Received message: " + receivedMessage.getContent() + ", Timestamp: " + new Date(receivedMessage.getTimestamp()));  
                 }
                 
