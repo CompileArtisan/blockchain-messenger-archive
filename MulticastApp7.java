@@ -2,6 +2,7 @@ import java.io.*;
 import java.net.*;
 import java.lang.*;
 import java.util.Date;
+import java.util.HashMap;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -15,6 +16,7 @@ class Message implements Serializable {
     private long timestamp;
     private PublicKey publicKey;
     byte[] signature;
+    HashMap<String, String> userKeyPairs = new HashMap<>();
 
     public Message(String content, PublicKey publicKey) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, SignatureException, ClassNotFoundException, IOException {
         this.publicKey = publicKey;
