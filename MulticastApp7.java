@@ -102,7 +102,7 @@ public class MulticastApp7 extends Thread{
         Block currentBlock = new Block("0"); // genesis block    
 // Now we'll have hard-coded public keys for users
         //currentBlock.addUserKeyPair("Praanesh", "public_key.ser");
-        // currentBlock.addUserKeyPair("Varun", "public_key.ser");
+        currentBlock.addUserKeyPair("Varun", "public_key.ser");
 
 
         java.util.Scanner sc = new java.util.Scanner(System.in);
@@ -110,13 +110,12 @@ public class MulticastApp7 extends Thread{
         while (true) {
             System.out.print("Enter message: ");
             String text = sc.nextLine();
-            if (text.equalsIgnoreCase("clear")) {
-                System.out.print("\033[H\033[2J");
-                continue;
+            if (text.equalsIgnoreCase("exit")) {
+                System.exit(0);
             }
 // Similarly we'll have hard-coded public keys for users
-            Message message = new Message(text, currentBlock.getPublicKey("Praanesh"));
-            // Message message = new Message(text, currentBlock.getPublicKey("Varun"));
+            // Message message = new Message(text, currentBlock.getPublicKey("Praanesh"));
+            Message message = new Message(text, currentBlock.getPublicKey("Varun"));
             m.sendMessage(message);
         }
     	// m.sendMessage(new java.util.Scanner(System.in).nextLine());
