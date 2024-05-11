@@ -14,7 +14,7 @@ public class Login {
         File privateKeyFile = new File("private_key.ser");
         File publicKeyFile = new File("public_key.ser");
 
-        if (!privateKeyFile.exists() || !publicKeyFile.exists()) {
+        if (!privateKeyFile.exists() && !publicKeyFile.exists()) {
             keyPair = generateKeyPair();
 
             PublicKey publicKey = keyPair.getPublic();
@@ -35,7 +35,7 @@ public class Login {
         
     }
 
-    private static KeyPair deserializeKeyPair() {
+    public static KeyPair deserializeKeyPair() {
         try (ObjectInputStream privateInput = new ObjectInputStream(new FileInputStream("private_key.ser"));
              ObjectInputStream publicInput = new ObjectInputStream(new FileInputStream("public_key.ser"))) {
 
@@ -50,7 +50,7 @@ public class Login {
         return null;
     }
 
-    private static void serializeKeyPair(KeyPair keyPair) {
+    public static void serializeKeyPair(KeyPair keyPair) {
         try (ObjectOutputStream privateOutput = new ObjectOutputStream(new FileOutputStream("private_key.ser"));
              ObjectOutputStream publicOutput = new ObjectOutputStream(new FileOutputStream("public_key.ser"))) {
 
@@ -61,7 +61,7 @@ public class Login {
         }
     }
 
-    private static KeyPair generateKeyPair() {
+    public static KeyPair generateKeyPair() {
         try {
             KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
             keyPairGenerator.initialize(2048);

@@ -1,6 +1,7 @@
 import java.io.*;
 import java.net.*;
 import java.lang.*;
+import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -10,46 +11,13 @@ import javax.crypto.NoSuchPaddingException;
 
 import java.security.*;
 
-
-class Message implements Serializable {
-    private String content;
-    private long timestamp;
-    private PublicKey publicKey;
-    byte[] signature;
-
-    public Message(String content, PublicKey publicKey) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, SignatureException, ClassNotFoundException, IOException {
-        this.publicKey = publicKey;
-        this.content = DigitalSignatureExample.encrypt(content, publicKey);
-        this.timestamp = System.currentTimeMillis();
-        this.signature = DigitalSignatureExample.sign(content, (PrivateKey) KeyDeserialiser.loadKeyFromFile("private_key.ser"));
-    }
-
-    public String getContent() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, ClassNotFoundException, IOException {
-        
-        return DigitalSignatureExample.decrypt(content, (PrivateKey) KeyDeserialiser.loadKeyFromFile("private_key.ser"));
-    }
-
-    public long getTimestamp() {
-        return timestamp;
-    }
-
-    public PublicKey getPublicKey() {
-        return publicKey;
-    }
-
-    public byte[] getSignature() {
-        return signature;
-    }
-}
-  
-// lmoa
-public class MulticastApp7 extends Thread{
+public class MulticastApp8 extends Thread{
     private MulticastSocket socket;
     private InetAddress group;
     private int port;
     private volatile boolean running = true;
 
-    public MulticastApp7(String multicastAddress, int port) throws IOException {
+    public MulticastApp8(String multicastAddress, int port) throws IOException {
         this.group = InetAddress.getByName(multicastAddress);
         this.port = port;
         this.socket = new MulticastSocket(port);
@@ -96,7 +64,31 @@ public class MulticastApp7 extends Thread{
     }
 
     public static void main(String[] args) throws IOException, ClassNotFoundException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, SignatureException {
-    	MulticastApp7 m = new MulticastApp7("239.255.255.250", 8888);
+    	MulticastApp8 m = new MulticastApp8("239.255.255.250", 8888);
+
+        KeyPair keyPair = null;
+
+        // Check if key pair files exist
+        File privateKeyFile = new File("private_key.ser");
+        File publicKeyFile = new File("public_key.ser");
+
+        if (!privateKeyFile.exists() && !publicKeyFile.exists()) {
+            keyPair = Login.generateKeyPair();
+
+            PublicKey publicKey = keyPair.getPublic();
+            String publicKeyString = Base64.getEncoder().encodeToString(publicKey.getEncoded());                    
+            System.out.println(publicKeyString);
+            // MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsKrByGKhBaScvikRLlYeFnbVA/GWC5KHrHvgE1P7npanpe3FaTOKrLOckO8IBPaYwzL6KAlH23kuKM29MVLjVRBJk8PtgMvTaNb095uL8Rk38ReT1iHqF3O2zcqq3bt9w/ux/Gdqf6bqolUnRM1lwG/yMUktHAeEyphoOKsfXIohh/FJVFqN9aRYeHx5K6LfAfo8VSTPt4RdM+l3xu1Z1khzOoGEdxNegkHMmK0pXLYIKINDxfL5/NXpWNyQNDPcYDrkYjOOLr7BgWBzeidxorcdBVAC5gAysZxJmeGzM7JjlJ9t+M+s1LcVfPOxazePmha7vau38NiRZdbunuUXkQIDAQAB
+
+            // use this to get back public key:
+            // String algorithm = "RSA"; // or whatever algorithm you used to generate the key pair
+            // boolean isPublic = true;
+            // PublicKey publicKey = (PublicKey) DigitalSignatureExample.decodeKey(publicKeyString, algorithm, isPublic);
+            // (PublicKey) DigitalSignatureExample.decodeKey("MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsKrByGKhBaScvikRLlYeFnbVA/GWC5KHrHvgE1P7npanpe3FaTOKrLOckO8IBPaYwzL6KAlH23kuKM29MVLjVRBJk8PtgMvTaNb095uL8Rk38ReT1iHqF3O2zcqq3bt9w/ux/Gdqf6bqolUnRM1lwG/yMUktHAeEyphoOKsfXIohh/FJVFqN9aRYeHx5K6LfAfo8VSTPt4RdM+l3xu1Z1khzOoGEdxNegkHMmK0pXLYIKINDxfL5/NXpWNyQNDPcYDrkYjOOLr7BgWBzeidxorcdBVAC5gAysZxJmeGzM7JjlJ9t+M+s1LcVfPOxazePmha7vau38NiRZdbunuUXkQIDAQAB", "RSA", true)
+
+            
+            Login.serializeKeyPair(keyPair);
+        }
 
         // block initialization
         Block currentBlock = new Block("0"); // genesis block    
