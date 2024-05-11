@@ -17,6 +17,7 @@ public class Login {
             keyPair = deserializeKeyPair();
         } else {
             keyPair = generateKeyPair();
+            System.out.println(keyPair.getPublic());
             serializeKeyPair(keyPair);
         }
 
