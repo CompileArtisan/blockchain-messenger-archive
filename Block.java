@@ -26,6 +26,10 @@ public class Block implements Serializable{
         }
     }
 
+    public void addUserKeyPair(String name, PublicKey publicKey) {
+        userKeyPairs.put(name, publicKey);
+    }
+
     public PublicKey getPublicKey(String userName) {
         return userKeyPairs.get(userName);
     }
