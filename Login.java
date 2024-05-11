@@ -4,19 +4,17 @@ import java.util.Base64;
 import java.util.HashMap;
 
 public class Login {
-    private static final String PRIVATE_KEY_FILE = "private_key.ser";
-    private static final String PUBLIC_KEY_FILE = "public_key.ser";
-
+   
     public static void main(String[] args) {
+
+        
         KeyPair keyPair = null;
 
         // Check if key pair files exist
-        File privateKeyFile = new File(PRIVATE_KEY_FILE);
-        File publicKeyFile = new File(PUBLIC_KEY_FILE);
+        File privateKeyFile = new File("private_key.ser");
+        File publicKeyFile = new File("public_key.ser");
 
-        if (privateKeyFile.exists() && publicKeyFile.exists()) {
-            keyPair = deserializeKeyPair();
-        } else {
+        if (!privateKeyFile.exists() || !publicKeyFile.exists()) {
             keyPair = generateKeyPair();
 
             PublicKey publicKey = keyPair.getPublic();
@@ -28,7 +26,7 @@ public class Login {
             // String algorithm = "RSA"; // or whatever algorithm you used to generate the key pair
             // boolean isPublic = true;
             // PublicKey publicKey = (PublicKey) DigitalSignatureExample.decodeKey(publicKeyString, algorithm, isPublic);
-            // (PublicKey) DigitalSignatureExample.decodeKey("MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsKrByGKhBaScvikRLlYeFnbVA/GWC5KHrHvgE1P7npanpe3FaTOKrLOckO8IBPaYwzL6KAlH23kuKM29MVLjVRBJk8PtgMvTaNb095uL8Rk38ReT1iHqF3O2zcqq3bt9w/ux/Gdqf6bqolUnRM1lwG/yMUktHAeEyphoOKsfXIohh/FJVFqN9aRYeHx5K6LfAfo8VSTPt4RdM+l3xu1Z1khzOoGEdxNegkHMmK0pXLYIKINDxfL5/NXpWNyQNDPcYDrkYjOOLr7BgWBzeidxorcdBVAC5gAysZxJmeGzM7JjlJ9t+M+s1LcVfPOxazePmha7vau38NiRZdbunuUXkQIDAQAB", "RSA", true);
+            // (PublicKey) DigitalSignatureExample.decodeKey("MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsKrByGKhBaScvikRLlYeFnbVA/GWC5KHrHvgE1P7npanpe3FaTOKrLOckO8IBPaYwzL6KAlH23kuKM29MVLjVRBJk8PtgMvTaNb095uL8Rk38ReT1iHqF3O2zcqq3bt9w/ux/Gdqf6bqolUnRM1lwG/yMUktHAeEyphoOKsfXIohh/FJVFqN9aRYeHx5K6LfAfo8VSTPt4RdM+l3xu1Z1khzOoGEdxNegkHMmK0pXLYIKINDxfL5/NXpWNyQNDPcYDrkYjOOLr7BgWBzeidxorcdBVAC5gAysZxJmeGzM7JjlJ9t+M+s1LcVfPOxazePmha7vau38NiRZdbunuUXkQIDAQAB", "RSA", true)
 
             
             serializeKeyPair(keyPair);
@@ -38,8 +36,8 @@ public class Login {
     }
 
     private static KeyPair deserializeKeyPair() {
-        try (ObjectInputStream privateInput = new ObjectInputStream(new FileInputStream(PRIVATE_KEY_FILE));
-             ObjectInputStream publicInput = new ObjectInputStream(new FileInputStream(PUBLIC_KEY_FILE))) {
+        try (ObjectInputStream privateInput = new ObjectInputStream(new FileInputStream("private_key.ser"));
+             ObjectInputStream publicInput = new ObjectInputStream(new FileInputStream("public_key.ser"))) {
 
             PrivateKey privateKey = (PrivateKey) privateInput.readObject();
             PublicKey publicKey = (PublicKey) publicInput.readObject();
@@ -53,8 +51,8 @@ public class Login {
     }
 
     private static void serializeKeyPair(KeyPair keyPair) {
-        try (ObjectOutputStream privateOutput = new ObjectOutputStream(new FileOutputStream(PRIVATE_KEY_FILE));
-             ObjectOutputStream publicOutput = new ObjectOutputStream(new FileOutputStream(PUBLIC_KEY_FILE))) {
+        try (ObjectOutputStream privateOutput = new ObjectOutputStream(new FileOutputStream("private_key.ser"));
+             ObjectOutputStream publicOutput = new ObjectOutputStream(new FileOutputStream("public_key.ser"))) {
 
             privateOutput.writeObject(keyPair.getPrivate());
             publicOutput.writeObject(keyPair.getPublic());
