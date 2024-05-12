@@ -20,6 +20,10 @@ public class Block implements Serializable{
         this.previousHash = previousHash;
     }
 
+    public void setMessage(Message message) {
+        this.message = message;
+    }
+    
     public void addUserKeyPair(String name, String publicKeyFile) {
         try {
             PublicKey publicKey = (PublicKey) KeyDeserialiser.loadKeyFromFile(publicKeyFile);

@@ -1,9 +1,7 @@
 import java.io.*;
 import java.net.*;
-import java.lang.*;
 import java.util.Base64;
 import java.util.Date;
-import java.util.HashMap;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -11,7 +9,7 @@ import javax.crypto.NoSuchPaddingException;
 
 import java.security.*;
 
-public class MulticastApp9 extends Thread{
+public class MulticastApp9 extends Thread {
     private MulticastSocket socket;
     private InetAddress group;
     private int port;
@@ -31,10 +29,9 @@ public class MulticastApp9 extends Thread{
         oos.writeObject(message);
         oos.flush();
         byte[] buffer = baos.toByteArray();
-        DatagramPacket packet = new DatagramPacket(buffer, buffer.length, group, port); 
+        DatagramPacket packet = new DatagramPacket(buffer, buffer.length, group, port);
         socket.send(packet);
     }
-      
 
     public void run() {
         byte[] buffer = new byte[4096];
@@ -51,16 +48,24 @@ public class MulticastApp9 extends Thread{
                 String s = sourceAddress.toString();
                 InetAddress localHost = Inet4Address.getLocalHost();
                 String ipv4Address = "/" + localHost.getHostAddress();
-                if (!s.equals(ipv4Address)&&DigitalSignatureExample.verify(receivedMessage.getContent(), receivedMessage.getSignature(), receivedMessage.getPublicKey())){
-                    System.out.println("Received message: " + receivedMessage.getContent() + ", Timestamp: " + new Date(receivedMessage.getTimestamp()));  
+                if (!s.equals(ipv4Address) && DigitalSignatureExample.verify(receivedMessage.getContent(), receivedMessage.getSignature(), receivedMessage.getPublicKey())) {
+                    System.out.println("Received message: " + receivedMessage.getContent() + ", Timestamp: " + new Date(receivedMessage.getTimestamp()));
                     String[] messageParts = receivedMessage.getContent().split(":");
                     if (messageParts.length == 3 && messageParts[0].equals("System")) {
                         // Update BlockChain with received public key
-                        blockChain.getBlock(blockChain.size() - 1).addUserKeyPair(messageParts[1], (PublicKey) DigitalSignatureExample.decodeKey(messageParts[2], "RSA", true));
+                        Block newBlock = new Block(blockChain.getBlock(blockChain.size() - 1).getHash());
+                        newBlock.addUserKeyPair(messageParts[1], (PublicKey) DigitalSignatureExample.decodeKey(messageParts[2], "RSA", true));
+                        blockChain.addBlock(newBlock);
+                        Login.serializeBlockChain(blockChain); // Serialize updated BlockChain
+                    } else {
+                        // Message sent by user
+                        Block newBlock = new Block(blockChain.getBlock(blockChain.size() - 1).getHash());
+                        newBlock.setMessage(receivedMessage);
+                        blockChain.addBlock(newBlock);
                         Login.serializeBlockChain(blockChain); // Serialize updated BlockChain
                     }
                 }
-                
+
             } catch (Exception e) {
                 e.printStackTrace();
                 //System.out.println("IOException: " + e.getMessage());
@@ -71,7 +76,7 @@ public class MulticastApp9 extends Thread{
     }
 
     public static void main(String[] args) throws IOException, ClassNotFoundException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, SignatureException {
-    	MulticastApp9 m = new MulticastApp9("239.255.255.250", 8888);
+        MulticastApp9 m = new MulticastApp9("239.255.255.250", 8888);
 
         KeyPair keyPair = null;
 
@@ -91,7 +96,7 @@ public class MulticastApp9 extends Thread{
             keyPair = Login.generateKeyPair();
 
             PublicKey publicKey = keyPair.getPublic();
-            String publicKeyString = Base64.getEncoder().encodeToString(publicKey.getEncoded());                    
+            String publicKeyString = Base64.getEncoder().encodeToString(publicKey.getEncoded());
             System.out.println(publicKeyString);
             // MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsKrByGKhBaScvikRLlYeFnbVA/GWC5KHrHvgE1P7npanpe3FaTOKrLOckO8IBPaYwzL6KAlH23kuKM29MVLjVRBJk8PtgMvTaNb095uL8Rk38ReT1iHqF3O2zcqq3bt9w/ux/Gdqf6bqolUnRM1lwG/yMUktHAeEyphoOKsfXIohh/FJVFqN9aRYeHx5K6LfAfo8VSTPt4RdM+l3xu1Z1khzOoGEdxNegkHMmK0pXLYIKINDxfL5/NXpWNyQNDPcYDrkYjOOLr7BgWBzeidxorcdBVAC5gAysZxJmeGzM7JjlJ9t+M+s1LcVfPOxazePmha7vau38NiRZdbunuUXkQIDAQAB
 
@@ -101,16 +106,8 @@ public class MulticastApp9 extends Thread{
             // PublicKey publicKey = (PublicKey) DigitalSignatureExample.decodeKey(publicKeyString, algorithm, isPublic);
             // (PublicKey) DigitalSignatureExample.decodeKey("MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsKrByGKhBaScvikRLlYeFnbVA/GWC5KHrHvgE1P7npanpe3FaTOKrLOckO8IBPaYwzL6KAlH23kuKM29MVLjVRBJk8PtgMvTaNb095uL8Rk38ReT1iHqF3O2zcqq3bt9w/ux/Gdqf6bqolUnRM1lwG/yMUktHAeEyphoOKsfXIohh/FJVFqN9aRYeHx5K6LfAfo8VSTPt4RdM+l3xu1Z1khzOoGEdxNegkHMmK0pXLYIKINDxfL5/NXpWNyQNDPcYDrkYjOOLr7BgWBzeidxorcdBVAC5gAysZxJmeGzM7JjlJ9t+M+s1LcVfPOxazePmha7vau38NiRZdbunuUXkQIDAQAB", "RSA", true)
 
-            
             Login.serializeKeyPair(keyPair);
         }
-
-        // block initialization
-        Block currentBlock = new Block("0"); // genesis block    
-// Now we'll have hard-coded public keys for users
-        //currentBlock.addUserKeyPair("Praanesh", "public_key.ser");
-        currentBlock.addUserKeyPair("Varun", "public_key.ser");
-
 
         java.util.Scanner sc = new java.util.Scanner(System.in);
         m.start();
@@ -120,13 +117,9 @@ public class MulticastApp9 extends Thread{
             if (text.equalsIgnoreCase("exit")) {
                 System.exit(0);
             }
-// Similarly we'll have hard-coded public keys for users
-            // Message message = new Message(text, currentBlock.getPublicKey("Praanesh"));
-            Message message = new Message(text, currentBlock.getPublicKey("Varun"));
-            //Message message = new Message(text, (PublicKey) DigitalSignatureExample.decodeKey("MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsKrByGKhBaScvikRLlYeFnbVA/GWC5KHrHvgE1P7npanpe3FaTOKrLOckO8IBPaYwzL6KAlH23kuKM29MVLjVRBJk8PtgMvTaNb095uL8Rk38ReT1iHqF3O2zcqq3bt9w/ux/Gdqf6bqolUnRM1lwG/yMUktHAeEyphoOKsfXIohh/FJVFqN9aRYeHx5K6LfAfo8VSTPt4RdM+l3xu1Z1khzOoGEdxNegkHMmK0pXLYIKINDxfL5/NXpWNyQNDPcYDrkYjOOLr7BgWBzeidxorcdBVAC5gAysZxJmeGzM7JjlJ9t+M+s1LcVfPOxazePmha7vau38NiRZdbunuUXkQIDAQAB", "RSA", true));
+            // Message sent by user
+            Message message = new Message(text, (PublicKey) DigitalSignatureExample.decodeKey("MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsKrByGKhBaScvikRLlYeFnbVA/GWC5KHrHvgE1P7npanpe3FaTOKrLOckO8IBPaYwzL6KAlH23kuKM29MVLjVRBJk8PtgMvTaNb095uL8Rk38ReT1iHqF3O2zcqq3bt9w/ux/Gdqf6bqolUnRM1lwG/yMUktHAeEyphoOKsfXIohh/FJVFqN9aRYeHx5K6LfAfo8VSTPt4RdM+l3xu1Z1khzOoGEdxNegkHMmK0pXLYIKINDxfL5/NXpWNyQNDPcYDrkYjOOLr7BgWBzeidxorcdBVAC5gAysZxJmeGzM7JjlJ9t+M+s1LcVfPOxazePmha7vau38NiRZdbunuUXkQIDAQAB", "RSA", true));
             m.sendMessage(message);
         }
-    	// m.sendMessage(new java.util.Scanner(System.in).nextLine());
-        // m.listen();
     }
 }
