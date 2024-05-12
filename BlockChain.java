@@ -3,6 +3,7 @@ import java.util.LinkedList;
 
 public class BlockChain implements Serializable {
     private LinkedList<Block> blockChain = new LinkedList<>();
+    private static final long serialVersionUID = 1L;
 
     public void addBlock(Block block) {
         blockChain.add(block);

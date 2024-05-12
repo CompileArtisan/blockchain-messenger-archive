@@ -21,6 +21,7 @@ public class MulticastApp9 extends Thread {
         this.port = port;
         this.socket = new MulticastSocket(port);
         this.socket.joinGroup(new InetSocketAddress(group, port), NetworkInterface.getByInetAddress(InetAddress.getLocalHost()));
+        this.blockChain = new BlockChain(); // Initialize BlockChain
     }
 
     public void sendMessage(Message message) throws IOException {
