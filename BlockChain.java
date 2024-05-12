@@ -16,6 +16,10 @@ public class BlockChain implements Serializable {
         return blockChain.size();
     }
 
+    public boolean isEmpty() {
+        return blockChain.isEmpty();
+    }
+
     
     
 }

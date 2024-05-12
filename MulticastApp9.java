@@ -52,12 +52,16 @@ public class MulticastApp9 extends Thread {
                     System.out.println("Received message: " + receivedMessage.getContent() + ", Timestamp: " + new Date(receivedMessage.getTimestamp()));
                     String[] messageParts = receivedMessage.getContent().split(":");
                     if (messageParts.length == 3 && messageParts[0].equals("System")) {
-                        // Update BlockChain with received public key
-                        Block newBlock = new Block(blockChain.getBlock(blockChain.size() - 1).getHash());
-                        newBlock.addUserKeyPair(messageParts[1], (PublicKey) DigitalSignatureExample.decodeKey(messageParts[2], "RSA", true));
-                        blockChain.addBlock(newBlock);
+                        if (!blockChain.isEmpty()) { // Check if the blockchain is not empty
+                            blockChain.getBlock(blockChain.size() - 1).addUserKeyPair(messageParts[1], (PublicKey) DigitalSignatureExample.decodeKey(messageParts[2], "RSA", true));
+                        } else {
+                            Block newBlock = new Block("0"); // Create a new block if the blockchain is empty
+                            blockChain.addBlock(newBlock);
+                            newBlock.addUserKeyPair(messageParts[1], (PublicKey) DigitalSignatureExample.decodeKey(messageParts[2], "RSA", true));
+                        }
                         Login.serializeBlockChain(blockChain); // Serialize updated BlockChain
-                    } else {
+                    }
+                     else {
                         // Message sent by user
                         Block newBlock = new Block(blockChain.getBlock(blockChain.size() - 1).getHash());
                         newBlock.setMessage(receivedMessage);
