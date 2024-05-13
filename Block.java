@@ -5,10 +5,15 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.util.HashMap;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 
 public class Block implements Serializable{
     private HashMap<String, PublicKey> userKeyPairs = new HashMap<>();
@@ -18,6 +23,10 @@ public class Block implements Serializable{
 
     public Block(String previousHash) {
         this.previousHash = previousHash;
+    }
+
+    public String getMessage() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, ClassNotFoundException, IOException{
+        return message.getContent();
     }
 
     public void setMessage(Message message) {
