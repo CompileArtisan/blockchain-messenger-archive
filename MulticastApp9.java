@@ -53,13 +53,13 @@ public class MulticastApp9 extends Thread {
                     String[] messageParts = receivedMessage.getContent().split(":");
                     if (messageParts.length == 3 && messageParts[0].equals("System")) {
                         // Update BlockChain with received public key
-                        Block newBlock = new Block(blockChain.getBlock(blockChain.size() - 1).getHash());
+                        Block newBlock = new Block("0");//blockChain.getBlock(blockChain.size() - 1).getHash());
                         newBlock.addUserKeyPair(messageParts[1], (PublicKey) DigitalSignatureExample.decodeKey(messageParts[2], "RSA", true));
                         blockChain.addBlock(newBlock);
                         Login.serializeBlockChain(blockChain); // Serialize updated BlockChain
                     } else {
                         // Message sent by user
-                        Block newBlock = new Block(blockChain.getBlock(blockChain.size() - 1).getHash());
+                        Block newBlock = new Block("0");blockChain.getBlock(blockChain.size() - 1).getHash());
                         newBlock.setMessage(receivedMessage);
                         blockChain.addBlock(newBlock);
                         Login.serializeBlockChain(blockChain); // Serialize updated BlockChain
@@ -87,6 +87,7 @@ public class MulticastApp9 extends Thread {
 
         if (!blockChainFile.exists()) {
             BlockChain blockChain = new BlockChain();
+            m.blockChain = blockChain;
             Login.serializeBlockChain(blockChain);
         } else {
             m.blockChain = Login.deserializeBlockChain(); // Deserialize BlockChain
