@@ -73,7 +73,7 @@ public class Login {
         return null;
     }
 
-    public static void serializeBlockChain(BlockChain blockChain) {
+    /*public static void serializeBlockChain(BlockChain blockChain) {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("BlockChain.ser"))) {
             oos.writeObject(blockChain);
         } catch (IOException e) {
@@ -88,7 +88,7 @@ public class Login {
             e.printStackTrace();
         }
         return null;
-    }
+    }*/
 
     // userKeyPairs.put(userName, new UserKeyPair(publicKeyFile, privateKeyFile)); to insert a keypair
     // UserKeyPair userKeyPair = userKeyPairs.get(userName); to get a keypair

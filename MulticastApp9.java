@@ -91,12 +91,15 @@ public class MulticastApp9 extends Thread {
             PublicKey publicKey = keyPair.getPublic();
             String publicKeyString = Base64.getEncoder().encodeToString(publicKey.getEncoded());
             System.out.println(publicKeyString);
-
+            Login.serializeKeyPair(keyPair);
             Message publicKeyMessage = new Message("", publicKey); // Empty content for public key message
+            m.currentBlock.addUserKeyPair("User", publicKey);
             m.sendMessage(publicKeyMessage);
 
-            Login.serializeKeyPair(keyPair);
+            
         }
+        keyPair = Login.deserializeKeyPair();
+        m.currentBlock.addUserKeyPair("User", keyPair.getPublic());
 
         java.util.Scanner sc = new java.util.Scanner(System.in);
         m.start();
@@ -107,7 +110,7 @@ public class MulticastApp9 extends Thread {
                 System.exit(0);
             }
 
-            Message message = new Message(text, currentBlock.getPublicKey("User"));
+            Message message = new Message(text, m.currentBlock.getPublicKey("User"));
             m.sendMessage(message);
         }
     }
