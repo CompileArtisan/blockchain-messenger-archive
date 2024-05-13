@@ -65,7 +65,7 @@ public class MulticastAppX extends Thread{
 
     public static void main(String[] args) throws IOException, ClassNotFoundException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, SignatureException {
     	MulticastAppX m = new MulticastAppX("239.255.255.250", 8888);
-
+        java.util.Scanner sc = new java.util.Scanner(System.in);
         KeyPair keyPair = null;
 
         // Check if key pair files exist
@@ -76,8 +76,12 @@ public class MulticastAppX extends Thread{
             keyPair = Login.generateKeyPair();
 
             PublicKey publicKey = keyPair.getPublic();
-            String publicKeyString = Base64.getEncoder().encodeToString(publicKey.getEncoded());                    
-            System.out.println(publicKeyString);
+            String publicKeyString = Base64.getEncoder().encodeToString(publicKey.getEncoded());   
+            System.out.print("Enter your name: ");
+            System.out.println("Name: "+sc.nextLine());
+            System.out.println("PublicKey: "+publicKeyString);
+            System.out.println();
+            
             // MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsKrByGKhBaScvikRLlYeFnbVA/GWC5KHrHvgE1P7npanpe3FaTOKrLOckO8IBPaYwzL6KAlH23kuKM29MVLjVRBJk8PtgMvTaNb095uL8Rk38ReT1iHqF3O2zcqq3bt9w/ux/Gdqf6bqolUnRM1lwG/yMUktHAeEyphoOKsfXIohh/FJVFqN9aRYeHx5K6LfAfo8VSTPt4RdM+l3xu1Z1khzOoGEdxNegkHMmK0pXLYIKINDxfL5/NXpWNyQNDPcYDrkYjOOLr7BgWBzeidxorcdBVAC5gAysZxJmeGzM7JjlJ9t+M+s1LcVfPOxazePmha7vau38NiRZdbunuUXkQIDAQAB
 
             // use this to get back public key:
@@ -86,18 +90,27 @@ public class MulticastAppX extends Thread{
             // PublicKey publicKey = (PublicKey) DigitalSignatureExample.decodeKey(publicKeyString, algorithm, isPublic);
             // (PublicKey) DigitalSignatureExample.decodeKey("MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsKrByGKhBaScvikRLlYeFnbVA/GWC5KHrHvgE1P7npanpe3FaTOKrLOckO8IBPaYwzL6KAlH23kuKM29MVLjVRBJk8PtgMvTaNb095uL8Rk38ReT1iHqF3O2zcqq3bt9w/ux/Gdqf6bqolUnRM1lwG/yMUktHAeEyphoOKsfXIohh/FJVFqN9aRYeHx5K6LfAfo8VSTPt4RdM+l3xu1Z1khzOoGEdxNegkHMmK0pXLYIKINDxfL5/NXpWNyQNDPcYDrkYjOOLr7BgWBzeidxorcdBVAC5gAysZxJmeGzM7JjlJ9t+M+s1LcVfPOxazePmha7vau38NiRZdbunuUXkQIDAQAB", "RSA", true)
 
-            
             Login.serializeKeyPair(keyPair);
+        } else {
+            // Deserialize the key pair
+            keyPair = Login.deserializeKeyPair();
+            // publicKeyString is taken from local file
+            PublicKey publicKey = keyPair.getPublic();
+            String publicKeyString = Base64.getEncoder().encodeToString(publicKey.getEncoded());
+            System.out.println("Public Key: " + publicKeyString);
         }
 
+        
+
+
+        
+        System.out.println("Enter receiver's Public Key: ");
+        String receiverPublicKeyString = sc.nextLine();
+        System.out.println("Enter receiver's name: ");
+        String receiverName = sc.nextLine();
         // block initialization
-        Block currentBlock = new Block("0"); // genesis block    
-// Now we'll have hard-coded public keys for users
-        //currentBlock.addUserKeyPair("Praanesh", "public_key.ser");
-        currentBlock.addUserKeyPair("Varun", "public_key.ser");
-
-
-        java.util.Scanner sc = new java.util.Scanner(System.in);
+        Block currentBlock = new Block("0"); // genesis block  
+        currentBlock.addUserKeyPair(receiverName, (PublicKey) DigitalSignatureExample.decodeKey(receiverPublicKeyString, "RSA", true));
         m.start();
         while (true) {
             System.out.print("Enter message: ");
@@ -107,7 +120,7 @@ public class MulticastAppX extends Thread{
             }
 // Similarly we'll have hard-coded public keys for users
             // Message message = new Message(text, currentBlock.getPublicKey("Praanesh"));
-            Message message = new Message(text, currentBlock.getPublicKey("Varun"));
+            Message message = new Message(text, currentBlock.getPublicKey(receiverName));
             //Message message = new Message(text, (PublicKey) DigitalSignatureExample.decodeKey("MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsKrByGKhBaScvikRLlYeFnbVA/GWC5KHrHvgE1P7npanpe3FaTOKrLOckO8IBPaYwzL6KAlH23kuKM29MVLjVRBJk8PtgMvTaNb095uL8Rk38ReT1iHqF3O2zcqq3bt9w/ux/Gdqf6bqolUnRM1lwG/yMUktHAeEyphoOKsfXIohh/FJVFqN9aRYeHx5K6LfAfo8VSTPt4RdM+l3xu1Z1khzOoGEdxNegkHMmK0pXLYIKINDxfL5/NXpWNyQNDPcYDrkYjOOLr7BgWBzeidxorcdBVAC5gAysZxJmeGzM7JjlJ9t+M+s1LcVfPOxazePmha7vau38NiRZdbunuUXkQIDAQAB", "RSA", true));
             m.sendMessage(message);
         }

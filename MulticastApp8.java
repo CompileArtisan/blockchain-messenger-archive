@@ -65,7 +65,7 @@ public class MulticastApp8 extends Thread{
 
     public static void main(String[] args) throws IOException, ClassNotFoundException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, SignatureException {
     	MulticastApp8 m = new MulticastApp8("239.255.255.250", 8888);
-
+        java.util.Scanner sc = new java.util.Scanner(System.in);
         KeyPair keyPair = null;
 
         // Check if key pair files exist
@@ -76,7 +76,8 @@ public class MulticastApp8 extends Thread{
             keyPair = Login.generateKeyPair();
 
             PublicKey publicKey = keyPair.getPublic();
-            String publicKeyString = Base64.getEncoder().encodeToString(publicKey.getEncoded());                    
+            String publicKeyString = Base64.getEncoder().encodeToString(publicKey.getEncoded());   
+
             System.out.println(publicKeyString);
             // MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsKrByGKhBaScvikRLlYeFnbVA/GWC5KHrHvgE1P7npanpe3FaTOKrLOckO8IBPaYwzL6KAlH23kuKM29MVLjVRBJk8PtgMvTaNb095uL8Rk38ReT1iHqF3O2zcqq3bt9w/ux/Gdqf6bqolUnRM1lwG/yMUktHAeEyphoOKsfXIohh/FJVFqN9aRYeHx5K6LfAfo8VSTPt4RdM+l3xu1Z1khzOoGEdxNegkHMmK0pXLYIKINDxfL5/NXpWNyQNDPcYDrkYjOOLr7BgWBzeidxorcdBVAC5gAysZxJmeGzM7JjlJ9t+M+s1LcVfPOxazePmha7vau38NiRZdbunuUXkQIDAQAB
 
@@ -97,7 +98,7 @@ public class MulticastApp8 extends Thread{
         currentBlock.addUserKeyPair("Varun", "public_key.ser");
 
 
-        java.util.Scanner sc = new java.util.Scanner(System.in);
+        
         m.start();
         while (true) {
             System.out.print("Enter message: ");
