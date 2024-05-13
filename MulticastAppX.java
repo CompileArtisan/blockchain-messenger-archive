@@ -16,6 +16,7 @@ public class MulticastAppX extends Thread{
     private InetAddress group;
     private int port;
     private volatile boolean running = true;
+    private PublicKey receiverKey;
 
     public MulticastAppX(String multicastAddress, int port) throws IOException {
         this.group = InetAddress.getByName(multicastAddress);
@@ -50,7 +51,7 @@ public class MulticastAppX extends Thread{
                 String s = sourceAddress.toString();
                 InetAddress localHost = Inet4Address.getLocalHost();
                 String ipv4Address = "/" + localHost.getHostAddress();
-                if (!s.equals(ipv4Address)&&DigitalSignatureExample.verify(receivedMessage.getContent(), receivedMessage.getSignature(), receivedMessage.getPublicKey())){
+                if (!s.equals(ipv4Address)&&DigitalSignatureExample.verify(receivedMessage.getContent(), receivedMessage.getSignature(), this.receiverKey)){
                     System.out.println("Received message: " + receivedMessage.getContent() + ", Timestamp: " + new Date(receivedMessage.getTimestamp()));  
                 }
                 
@@ -110,6 +111,7 @@ public class MulticastAppX extends Thread{
         String receiverName = sc.nextLine();
         // block initialization
         Block currentBlock = new Block("0"); // genesis block  
+        m.receiverKey = (PublicKey) DigitalSignatureExample.decodeKey(receiverPublicKeyString, "RSA", true);
         currentBlock.addUserKeyPair(receiverName, (PublicKey) DigitalSignatureExample.decodeKey(receiverPublicKeyString, "RSA", true));
         m.start();
         while (true) {
