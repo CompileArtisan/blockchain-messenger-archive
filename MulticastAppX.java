@@ -54,6 +54,9 @@ public class MulticastAppX extends Thread{
                 String ipv4Address = "/" + localHost.getHostAddress();
                 if (!s.equals(ipv4Address)&&DigitalSignatureExample.verify(receivedMessage.getContent(), receivedMessage.getSignature(), this.receiverKey)){
                     System.out.println("Received message: " + receivedMessage.getContent() + ", Timestamp: " + new Date(receivedMessage.getTimestamp()));  
+                    BlockChain blockChain = BlockChain.deserializeBlockChain("blockchain.ser"); 
+                    blockChain.addBlock(new Block("0"));
+                    blockChain.getLastBlock().setMessage(receivedMessage);
                 }
                 
             } catch (Exception e) {
@@ -130,6 +133,11 @@ public class MulticastAppX extends Thread{
             }
             Message message = new Message(text, m.initialiser.getPublicKey(receiverName));
             m.sendMessage(message);
+            // add a new block with the message in it
+            BlockChain blockChain = BlockChain.deserializeBlockChain("blockchain.ser");
+            blockChain.addBlock(new Block("0"));
+            blockChain.getLastBlock().setMessage(message);
+            blockChain.serializeBlockChain("blockchain.ser");
         }
     	// m.sendMessage(new java.util.Scanner(System.in).nextLine());
         // m.listen();
