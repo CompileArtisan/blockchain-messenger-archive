@@ -2,6 +2,7 @@ import java.io.*;
 import java.net.*;
 import java.util.Base64;
 import java.util.Date;
+import java.util.HashMap;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -14,13 +15,14 @@ public class MulticastApp9 extends Thread {
     private InetAddress group;
     private int port;
     private volatile boolean running = true;
-    private BlockChain blockChain;
+    private Block currentBlock;
 
     public MulticastApp9(String multicastAddress, int port) throws IOException {
         this.group = InetAddress.getByName(multicastAddress);
         this.port = port;
         this.socket = new MulticastSocket(port);
         this.socket.joinGroup(new InetSocketAddress(group, port), NetworkInterface.getByInetAddress(InetAddress.getLocalHost()));
+        this.currentBlock = new Block("0"); // Initialize the block
     }
 
     public void sendMessage(Message message) throws IOException {
@@ -48,31 +50,30 @@ public class MulticastApp9 extends Thread {
                 String s = sourceAddress.toString();
                 InetAddress localHost = Inet4Address.getLocalHost();
                 String ipv4Address = "/" + localHost.getHostAddress();
+
                 if (!s.equals(ipv4Address) && DigitalSignatureExample.verify(receivedMessage.getContent(), receivedMessage.getSignature(), receivedMessage.getPublicKey())) {
-                    System.out.println("Received message: " + receivedMessage.getContent() + ", Timestamp: " + new Date(receivedMessage.getTimestamp()));
-                    String[] messageParts = receivedMessage.getContent().split(":");
-                    if (messageParts.length == 3 && messageParts[0].equals("System")) {
-                        // Update BlockChain with received public key
-                        Block newBlock = new Block("0");//blockChain.getBlock(blockChain.size() - 1).getHash());
-                        newBlock.addUserKeyPair(messageParts[1], (PublicKey) DigitalSignatureExample.decodeKey(messageParts[2], "RSA", true));
-                        blockChain.addBlock(newBlock);
-                        Login.serializeBlockChain(blockChain); // Serialize updated BlockChain
+                    if (isPublicKeyMessage(receivedMessage)) {
+                        PublicKey publicKey = receivedMessage.getPublicKey();
+                        String userName = "User"; // Assuming the name is "User" for every public key
+                        currentBlock.addUserKeyPair(userName, publicKey);
+                        System.out.println("Added new public key for User: " + Base64.getEncoder().encodeToString(publicKey.getEncoded()));
                     } else {
-                        // Message sent by user
-                        Block newBlock = new Block("0");blockChain.getBlock(blockChain.size() - 1).getHash());
-                        newBlock.setMessage(receivedMessage);
-                        blockChain.addBlock(newBlock);
-                        Login.serializeBlockChain(blockChain); // Serialize updated BlockChain
+                        System.out.println("Received message: " + receivedMessage.getContent() + ", Timestamp: " + new Date(receivedMessage.getTimestamp()));
                     }
                 }
 
             } catch (Exception e) {
                 e.printStackTrace();
-                //System.out.println("IOException: " + e.getMessage());
             } finally {
                 packet.setLength(buffer.length);
             }
         }
+    }
+
+    private boolean isPublicKeyMessage(Message message) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, ClassNotFoundException, IOException {
+        // Assuming the message content is empty for public key messages
+        // Modify this condition based on your actual message structure
+        return message.getContent().isEmpty() && message.getPublicKey() != null && message.getSignature() != null;
     }
 
     public static void main(String[] args) throws IOException, ClassNotFoundException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, SignatureException {
@@ -83,15 +84,6 @@ public class MulticastApp9 extends Thread {
         // Check if key pair files exist
         File privateKeyFile = new File("private_key.ser");
         File publicKeyFile = new File("public_key.ser");
-        File blockChainFile = new File("BlockChain.ser");
-
-        if (!blockChainFile.exists()) {
-            BlockChain blockChain = new BlockChain();
-            m.blockChain = blockChain;
-            Login.serializeBlockChain(blockChain);
-        } else {
-            m.blockChain = Login.deserializeBlockChain(); // Deserialize BlockChain
-        }
 
         if (!privateKeyFile.exists() && !publicKeyFile.exists()) {
             keyPair = Login.generateKeyPair();
@@ -99,24 +91,12 @@ public class MulticastApp9 extends Thread {
             PublicKey publicKey = keyPair.getPublic();
             String publicKeyString = Base64.getEncoder().encodeToString(publicKey.getEncoded());
             System.out.println(publicKeyString);
-            // MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsKrByGKhBaScvikRLlYeFnbVA/GWC5KHrHvgE1P7npanpe3FaTOKrLOckO8IBPaYwzL6KAlH23kuKM29MVLjVRBJk8PtgMvTaNb095uL8Rk38ReT1iHqF3O2zcqq3bt9w/ux/Gdqf6bqolUnRM1lwG/yMUktHAeEyphoOKsfXIohh/FJVFqN9aRYeHx5K6LfAfo8VSTPt4RdM+l3xu1Z1khzOoGEdxNegkHMmK0pXLYIKINDxfL5/NXpWNyQNDPcYDrkYjOOLr7BgWBzeidxorcdBVAC5gAysZxJmeGzM7JjlJ9t+M+s1LcVfPOxazePmha7vau38NiRZdbunuUXkQIDAQAB
 
-            // use this to get back public key:
-            // String algorithm = "RSA"; // or whatever algorithm you used to generate the key pair
-            // boolean isPublic = true;
-            // PublicKey publicKey = (PublicKey) DigitalSignatureExample.decodeKey(publicKeyString, algorithm, isPublic);
-            // (PublicKey) DigitalSignatureExample.decodeKey("MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsKrByGKhBaScvikRLlYeFnbVA/GWC5KHrHvgE1P7npanpe3FaTOKrLOckO8IBPaYwzL6KAlH23kuKM29MVLjVRBJk8PtgMvTaNb095uL8Rk38ReT1iHqF3O2zcqq3bt9w/ux/Gdqf6bqolUnRM1lwG/yMUktHAeEyphoOKsfXIohh/FJVFqN9aRYeHx5K6LfAfo8VSTPt4RdM+l3xu1Z1khzOoGEdxNegkHMmK0pXLYIKINDxfL5/NXpWNyQNDPcYDrkYjOOLr7BgWBzeidxorcdBVAC5gAysZxJmeGzM7JjlJ9t+M+s1LcVfPOxazePmha7vau38NiRZdbunuUXkQIDAQAB", "RSA", true)
-
+            Message publicKeyMessage = new Message("", publicKey); // Empty content for public key message
+            m.sendMessage(publicKeyMessage);
 
             Login.serializeKeyPair(keyPair);
         }
-
-        // block initialization
-        Block currentBlock = new Block("0"); // genesis block
-// Now we'll have hard-coded public keys for users
-        //currentBlock.addUserKeyPair("Praanesh", "public_key.ser");
-        currentBlock.addUserKeyPair("Varun", "public_key.ser");
-
 
         java.util.Scanner sc = new java.util.Scanner(System.in);
         m.start();
@@ -126,13 +106,9 @@ public class MulticastApp9 extends Thread {
             if (text.equalsIgnoreCase("exit")) {
                 System.exit(0);
             }
-// Similarly we'll have hard-coded public keys for users
-            // Message message = new Message(text, currentBlock.getPublicKey("Praanesh"));
-            Message message = new Message(text, currentBlock.getPublicKey("Varun"));
-            //Message message = new Message(text, (PublicKey) DigitalSignatureExample.decodeKey("MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsKrByGKhBaScvikRLlYeFnbVA/GWC5KHrHvgE1P7npanpe3FaTOKrLOckO8IBPaYwzL6KAlH23kuKM29MVLjVRBJk8PtgMvTaNb095uL8Rk38ReT1iHqF3O2zcqq3bt9w/ux/Gdqf6bqolUnRM1lwG/yMUktHAeEyphoOKsfXIohh/FJVFqN9aRYeHx5K6LfAfo8VSTPt4RdM+l3xu1Z1khzOoGEdxNegkHMmK0pXLYIKINDxfL5/NXpWNyQNDPcYDrkYjOOLr7BgWBzeidxorcdBVAC5gAysZxJmeGzM7JjlJ9t+M+s1LcVfPOxazePmha7vau38NiRZdbunuUXkQIDAQAB", "RSA", true));
+
+            Message message = new Message(text, currentBlock.getPublicKey("User"));
             m.sendMessage(message);
         }
-        // m.sendMessage(new java.util.Scanner(System.in).nextLine());
-        // m.listen();
     }
 }
