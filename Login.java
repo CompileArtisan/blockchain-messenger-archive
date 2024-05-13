@@ -11,8 +11,8 @@ public class Login {
         KeyPair keyPair = null;
 
         // Check if key pair files exist
-        File privateKeyFile = new File("verifier.ser");
-        File publicKeyFile = new File("v1.ser");
+        File privateKeyFile = new File("private_key.ser");
+        File publicKeyFile = new File("public_key.ser");
 
         if (!privateKeyFile.exists() && !publicKeyFile.exists()) {
             keyPair = generateKeyPair();
@@ -51,7 +51,7 @@ public class Login {
     }
 
     public static void serializeKeyPair(KeyPair keyPair) {
-        try (ObjectOutputStream privateOutput = new ObjectOutputStream(new FileOutputStream("verifier.ser"));
+        try (ObjectOutputStream privateOutput = new ObjectOutputStream(new FileOutputStream("private_key.ser"));
              ObjectOutputStream publicOutput = new ObjectOutputStream(new FileOutputStream("public_key.ser"))) {
 
             privateOutput.writeObject(keyPair.getPrivate());

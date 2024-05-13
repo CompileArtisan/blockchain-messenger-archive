@@ -92,7 +92,7 @@ public class MulticastApp9 extends Thread {
             String publicKeyString = Base64.getEncoder().encodeToString(publicKey.getEncoded());
             System.out.println(publicKeyString);
             Login.serializeKeyPair(keyPair);
-            Message publicKeyMessage = new Message("", (PublicKey) DigitalSignatureExample.decodeKey("MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmjehKG3VvK4Ofsu198YyWzY8PAhBeNNcRoocwm7fMHYN/iM6NUgpzeD+BVlfGFC6bw94WkpRr9yD0FsAx2cGtxQadBxoMRp+CjTWsNfbHrLBvmn+MDrQHSiUBuxSbWQlp8gWfSXTO/2IBRN+2VlmECa6IBUtCuU8/A5R2UT2fvZY/RhLXZ+iCaJDgx1VETWTUKDfZhWRgfTNshiD2Ng9YA/4KAKo4TUP5U1Mtxqsascl3U7fIDWe4DZrbtyL+5YdwU7jtIg8EDpOCnRZysWO4IuWSGELljKIxvKe/tZUkF07TT5vUuVOmWMyGVoQ3SMENtdu60C3W8UVt9XiIT9sXQIDAQAB", "RSA", true); // Empty content for public key message
+            Message publicKeyMessage = new Message("", (PublicKey) DigitalSignatureExample.decodeKey("MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAttKMf91g+qVwBU7yidLvR/YS0dnDGwx2xK8VillHs96Io+mfCPu92nC4NeqdXKXN9uIDpxAUm99kZiUzDf3LCzzpAmRpzGpcGPo8yzmc54xfJRQFmkuaw9o2/dYWWIL6U1OS8ZGyB4mwHzvvohOVRiq5oFasT2lIG7vpMD7BptRUO7VxRb3H+hfc5BpuUM3webQ2Z5eMZbKrc5tv+ejqDlByPABo856GkKnySXVnJPHz38SD3jGxr3hzjHj7RCEyFdUhQ6vLRDPatidZQ4hsxcfzeTlrdseKzaSpZsUvGZklcvJ+CyR8n9aQgHoGI59+to4ult0IsG9arpladOcS8wIDAQAB", "RSA", true)); // Empty content for public key message
             m.currentBlock.addUserKeyPair("User", publicKey);
             m.sendMessage(publicKeyMessage);
 
