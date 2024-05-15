@@ -57,6 +57,7 @@ public class MulticastAppX extends Thread{
                     BlockChain blockChain = BlockChain.deserializeBlockChain("blockchain.ser"); 
                     blockChain.addBlock(new Block("0"));
                     blockChain.getLastBlock().setMessage(receivedMessage);
+                    blockChain.serializeBlockChain("blockchain.ser");
                 }
                 
             } catch (Exception e) {

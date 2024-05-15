@@ -19,18 +19,20 @@ public class Block implements Serializable{
     private HashMap<String, PublicKey> userKeyPairs = new HashMap<>();
     private Message message;
     private String previousHash;
-    private String hash;
+    public String hash;
 
     public Block(String previousHash) {
         this.previousHash = previousHash;
+        
     }
 
     public String getMessage() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, ClassNotFoundException, IOException{
         return message.getContent();
     }
 
-    public void setMessage(Message message) {
+    public void setMessage(Message message) throws InvalidKeyException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, ClassNotFoundException, IOException {
         this.message = message;
+        this.hash = getHash();
     }
     
     public void addUserKeyPair(String name, String publicKeyFile) {
@@ -70,13 +72,12 @@ public class Block implements Serializable{
         return null;
     }
 
-    public String getHash() {
+    public String getHash() throws InvalidKeyException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, ClassNotFoundException, IOException {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             String data = "Block{" +
-                    "userKeyPairs=" + userKeyPairs +
                     ", previousHash='" + previousHash +
-                    ", message=" + message +
+                    ", message=" + message.getContent() +
                     '}';
             byte[] hash = digest.digest(data.getBytes(StandardCharsets.UTF_8));
             StringBuilder hexString = new StringBuilder();

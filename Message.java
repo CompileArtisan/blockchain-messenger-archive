@@ -18,18 +18,14 @@ public class Message implements Serializable {
 
     public Message(String content, PublicKey publicKey) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, SignatureException, ClassNotFoundException, IOException {
         this.publicKey = publicKey;
-        this.timestamp = System.currentTimeMillis();
+        long currentTimeMillis = System.currentTimeMillis();
+        this.timestamp = (currentTimeMillis / (1000 * 60)) * (1000 * 60);
         
-        if (content != ""){
-            this.content = DigitalSignatureExample.encrypt(content, publicKey);
-            this.signature = DigitalSignatureExample.sign(content, (PrivateKey) KeyDeserialiser.loadKeyFromFile("private_key.ser"));
-        } else {
-            this.content = content;
-            this.signature = DigitalSignatureExample.sign(content, (PrivateKey) KeyDeserialiser.loadKeyFromFile("verifier.ser"));
-        }
+        this.content = DigitalSignatureExample.encrypt(content, publicKey);
+        this.signature = DigitalSignatureExample.sign(content, (PrivateKey) KeyDeserialiser.loadKeyFromFile("private_key.ser"));
+
     }
     public String getContent() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, ClassNotFoundException, IOException {
-        if (content == "") return content;
         return DigitalSignatureExample.decrypt(content, (PrivateKey) KeyDeserialiser.loadKeyFromFile("private_key.ser"));
     }
 
