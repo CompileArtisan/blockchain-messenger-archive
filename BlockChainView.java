@@ -18,7 +18,7 @@ public class BlockChainView {
             Block block = blockChain.getBlock(i);
             System.out.println("Block " + i + ":");
             // System.out.println("Previous Hash: " + block.getPreviousHash());
-            System.out.println("Hash: " + block.getHash());
+            System.out.println("Hash: " + block.hash);
             //System.out.println("Message: " + block.getMessage());
             // System.out.println("Sender: " + block.getMessage().getSender());
             // System.out.println("Receiver: " + block.getMessage().getReceiver());
